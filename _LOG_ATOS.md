@@ -17,3 +17,5 @@ data_criacao: "2026-09-03"
 | `2026-09-03T22:55:00-03:00` | Antigravity AI | `REGISTRO_SUPABASE_DDL` | Criação da migração SQL com tabelas de assinantes, planos e transações aplicadas no banco. | Concluído ✅ |
 | `2026-09-03T22:56:00-03:00` | Antigravity AI | `DOCUMENTACAO_EXTENSA` | Elaboração dos 6 documentos estratégicos de engenharia, arquitetura e escala. | Concluído ✅ |
 | `2026-09-04T11:50:00-03:00` | Antigravity AI | `ENGENHARIA_PORTAL_2_MOTOR` | Implementação do Core v1.0 (schemas Pydantic v2, normalizer de URLs e modalidade, matcher determinístico com veto por palavras negativas, adaptadores e 9 testes unitários 100% aprovados). | Concluído ✅ |
+| `2026-09-04T11:56:00-03:00` | Antigravity AI | `CONFORMIDADE_LEGAL_LOJAS` | Criação de Termos de Uso e Política de Privacidade LGPD com links de rodapé na landing page para aprovação na Kiwify, Hotmart e Mercado Livre. | Concluído ✅ |
+| `2026-09-04T11:58:00-03:00` | Antigravity AI | `ENGENHARIA_PORTAL_3_NOTIF` | Implementação dos formatadores de entrega multicanal (WhatsApp e Telegram), gerador de prompts de cartas de apresentação e bateria de 11 testes unitários aprovados. | Concluído ✅ |
