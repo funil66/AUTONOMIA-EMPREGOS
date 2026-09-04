@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomia Empregos — Seu Copiloto Autônomo de Carreira 24/7</title>
+    <meta name="description" content="Pare de perder horas preenchendo formulários repetitivos. Deixe nosso Copiloto caçar as melhores vagas e aplicar por você direto no WhatsApp.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --accent: #10b981;
+            --dark: #0f172a;
+            --card-bg: #1e293b;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--dark); color: var(--text-light); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        
+        /* Header */
+        header { padding: 24px 0; border-bottom: 1px solid var(--border); }
+        .nav { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 800; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo span { color: var(--accent); }
+        .btn-nav { background: rgba(37, 99, 235, 0.15); border: 1px solid var(--primary); color: #fff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+        .btn-nav:hover { background: var(--primary); }
+
+        /* Hero */
+        .hero { padding: 80px 0 60px; text-align: center; }
+        .badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent); color: var(--accent); padding: 6px 16px; border-radius: 50px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+        .hero h1 { font-size: 48px; font-weight: 800; letter-spacing: -1px; margin-bottom: 20px; line-height: 1.2; }
+        .hero h1 span { background: linear-gradient(135deg, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { font-size: 20px; color: var(--text-muted); max-width: 760px; margin: 0 auto 36px; }
+        
+        /* CTA Button */
+        .cta-btn { background: linear-gradient(135deg, var(--primary), #3b82f6); color: #fff; padding: 18px 36px; border-radius: 12px; font-size: 18px; font-weight: 700; text-decoration: none; display: inline-block; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4); transition: transform 0.2s; }
+        .cta-btn:hover { transform: translateY(-2px); }
+
+        /* Pricing Grid */
+        .pricing { padding: 80px 0; }
+        .pricing-title { text-align: center; margin-bottom: 50px; }
+        .pricing-title h2 { font-size: 36px; font-weight: 800; margin-bottom: 12px; }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+        
+        .price-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; display: flex; flex-direction: column; transition: all 0.3s; position: relative; }
+        .price-card.featured { border-color: var(--accent); box-shadow: 0 0 30px rgba(16, 185, 129, 0.2); }
+        .card-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; }
+        
+        .card-tier { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .card-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; min-height: 40px; }
+        .card-price { font-size: 38px; font-weight: 800; margin-bottom: 24px; display: flex; align-items: baseline; gap: 4px; }
+        .card-price span { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+        
+        .card-features { list-style: none; margin-bottom: 30px; flex-grow: 1; }
+        .card-features li { font-size: 14px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px; color: #cbd5e1; }
+        .card-features li::before { content: "✓"; color: var(--accent); font-weight: bold; }
+        
+        .btn-card { display: block; text-align: center; padding: 14px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; text-decoration: none; font-weight: 700; transition: all 0.2s; }
+        .btn-card:hover, .price-card.featured .btn-card { background: var(--primary); border-color: var(--primary); }
+
+        /* Footer */
+        footer { padding: 40px 0; border-top: 1px solid var(--border); text-align: center; color: var(--text-muted); font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container nav">
+            <a href="#" class="logo">⚡ AUTONOMIA <span>EMPREGOS</span></a>
+            <a href="#planos" class="btn-nav">Ver Planos</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="badge">🚀 O Fim da "Gupyficação" e do Cansaço Mental</div>
+            <h1>Conquiste entrevistas enquanto você dorme.<br><span>Seu Copiloto de Carreira 24/7.</span></h1>
+            <p>O robô inteligente que monitora LinkedIn, Indeed e multinacionais, redige cartas executivas sob medida com IA e aplica por você direto no WhatsApp.</p>
+            <a href="#planos" class="cta-btn">Quero Meu Copiloto de Carreira ➔</a>
+        </div>
+    </section>
+
+    <section class="pricing" id="planos">
+        <div class="container">
+            <div class="pricing-title">
+                <h2>Escolha seu nível de assessoria</h2>
+                <p style="color: var(--text-muted);">Sem fidelidade. Cancele quando quiser em 1 clique.</p>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Tier 1 -->
+                <div class="price-card">
+                    <div class="card-tier">Radar Hunter</div>
+                    <div class="card-desc">Para quem só quer as melhores vagas sem perder tempo caçando.</div>
+                    <div class="card-price">R$ 47 <span>/mês</span></div>
+                    <ul class="card-features">
+                        <li>Varredura 24/7 em 5 plataformas</li>
+                        <li>Filtro rigoroso: 100% Remoto ou Sua Região</li>
+                        <li>Alertas instantâneos no Telegram e WhatsApp</li>
+                        <li>Bypass de vagas fantasmas e bancos de talentos</li>
+                    </ul>
+                    <a href="https://pay.kiwify.com.br/placeholder-tier1" class="btn-card">Assinar Radar</a>
+                </div>
+
+                <!-- Tier 2 -->
+                <div class="price-card featured">
+                    <div class="card-tag">Mais Escolhido</div>
+                    <div class="card-tier">Auto-Sniper</div>
+                    <div class="card-desc">Caça a vaga, prepara a carta e despacha direto para a decisão.</div>
+                    <div class="card-price">R$ 97 <span>/mês</span></div>
+                    <ul class="card-features">
+                        <li>Tudo incluso no plano Radar Hunter</li>
+                        <li>Geração de Cartas de Apresentação com IA</li>
+                        <li>Despacho direto para o e-mail de sócios e RH</li>
+                        <li>Botão de aprovação em 1 clique no WhatsApp</li>
+                    </ul>
+                    <a href="https://pay.kiwify.com.br/placeholder-tier2" class="btn-card">Assinar Sniper</a>
+                </div>
+
+                <!-- Tier 3 -->
+                <div class="price-card">
+                    <div class="card-tier">Executive Copilot</div>
+                    <div class="card-desc">Para quem mira vagas sênior em startups, fintechs e multinacionais.</div>
+                    <div class="card-price">R$ 197 <span>/mês</span></div>
+                    <ul class="card-features">
+                        <li>Tudo incluso no plano Auto-Sniper</li>
+                        <li>Cobertura de ATS Globais (Lever, Greenhouse, Ashby)</li>
+                        <li>Painel Web Kanban de Gestão de Candidaturas</li>
+                        <li>Dossiê Semanal do Mercado em PDF</li>
+                    </ul>
+                    <a href="https://pay.kiwify.com.br/placeholder-tier3" class="btn-card">Assinar Copilot</a>
+                </div>
+
+                <!-- Tier 4 -->
+                <div class="price-card">
+                    <div class="card-tier">CLT Master VIP</div>
+                    <div class="card-desc">A assessoria completa: da caça ao treino para a entrevista e contrato.</div>
+                    <div class="card-price">R$ 347 <span>/mês</span></div>
+                    <ul class="card-features">
+                        <li>Tudo incluso no Executive Copilot</li>
+                        <li>Simulador de Entrevista por Áudio no WhatsApp</li>
+                        <li>Diagnóstico de Dicção, Clareza e Método STAR</li>
+                        <li>Auditoria Forense de Salário e Riscos (PJ vs CLT)</li>
+                        <li>Minuta formal de contraproposta salarial</li>
+                    </ul>
+                    <a href="https://pay.kiwify.com.br/placeholder-tier4" class="btn-card">Assinar VIP</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>© 2026 Autonomia Empregos — Tecnologia Soberana de Carreira & Automação.</p>
+            <p>Hospedado na infraestrutura soberana Autonomia App • Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
