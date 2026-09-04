@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomia Empregos — Cockpit de Operação ao Vivo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0a0f1d;
+            --bg-card: #131b2e;
+            --bg-input: #1b2640;
+            --border: #233252;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-main); color: var(--text-main); min-height: 100vh; padding: 24px; }
+        .container { max-width: 1300px; margin: 0 auto; }
+
+        /* Header */
+        header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+        .logo { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .logo span { color: var(--accent); }
+        .badge-live { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent); color: var(--accent); font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+
+        /* Grid */
+        .layout-grid { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
+
+        /* Sidebar de Filtros */
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+        .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: #fff; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-control { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px; outline: none; transition: border 0.2s; }
+        .form-control:focus { border-color: var(--primary); }
+
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: #cbd5e1; cursor: pointer; }
+        .checkbox-group input { width: 16px; height: 16px; accent-color: var(--primary); }
+
+        .btn-search { width: 100%; background: linear-gradient(135deg, var(--primary), #3b82f6); color: #fff; border: none; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; margin-top: 8px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); }
+        .btn-search:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-search:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Vagas Results */
+        .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .results-header h3 { font-size: 18px; font-weight: 700; }
+        .jobs-list { display: flex; flex-direction: column; gap: 16px; }
+
+        .job-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: all 0.2s; display: flex; flex-direction: column; gap: 12px; }
+        .job-card:hover { border-color: #3b82f6; }
+        .job-card.disqualified { border-left: 5px solid var(--danger); opacity: 0.8; }
+        .job-card.qualified { border-left: 5px solid var(--accent); }
+
+        .job-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .job-title { font-size: 17px; font-weight: 700; color: #fff; text-decoration: none; }
+        .job-title:hover { color: #60a5fa; }
+        .job-company { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+        
+        .score-pill { padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .score-high { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent); color: var(--accent); }
+        .score-med { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--warning); color: var(--warning); }
+        .score-veto { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: var(--danger); }
+
+        .job-meta-row { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; }
+        .job-tag { background: var(--bg-input); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); color: #cbd5e1; }
+        
+        .job-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .reasons-box { background: rgba(0,0,0,0.25); border-radius: 6px; padding: 10px 14px; font-size: 12px; }
+        .reasons-box ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .reasons-box li { display: flex; align-items: center; gap: 6px; }
+
+        .job-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 6px; }
+        .btn-action { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background: rgba(255,255,255,0.12); }
+        .btn-ai { background: #005c4b; border-color: #00a884; color: #25d366; }
+        .btn-ai:hover { background: #007a63; color: #fff; }
+
+        /* Modal Carta */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 750px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 24px; overflow-y: auto; }
+        .letter-textarea { width: 100%; height: 320px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; padding: 16px; resize: vertical; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+
+        /* Spinner */
+        .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="logo">⚡ AUTONOMIA <span>EMPREGOS</span> <div class="badge-live">● Cockpit Local de Teste</div></div>
+            <div style="font-size: 13px; color: var(--text-muted);">Módulo MOD-015 • Teste Ativo de Engenharia</div>
+        </header>
+
+        <div class="layout-grid">
+            <!-- Painel de Controles -->
+            <div class="card">
+                <h2>🎯 Filtros do Candidato</h2>
+                
+                <div class="form-group">
+                    <label>Cargo Alvo</label>
+                    <input type="text" id="searchTerm" class="form-control" value="Advogado Contencioso">
+                </div>
+
+                <div class="form-group">
+                    <label>Localização</label>
+                    <input type="text" id="location" class="form-control" value="Brasil">
+                </div>
+
+                <div class="form-group">
+                    <label>Pretensão Mínima</label>
+                    <input type="text" id="minSalary" class="form-control" value="R$ 10.000,00">
+                </div>
+
+                <div class="form-group">
+                    <label>Palavras Proibidas (Hard Veto)</label>
+                    <input type="text" id="negativeKeywords" class="form-control" value="Estágio, Presencial">
+                    <div style="font-size: 11px; color: var(--danger); margin-top: 4px;">Vagas com estes termos recebem nota ZERO imediata.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Plataformas de Varredura</label>
+                    <label class="checkbox-group"><input type="checkbox" id="platLinkedin" checked> LinkedIn Jobs</label>
+                    <label class="checkbox-group"><input type="checkbox" id="platIndeed" checked> Indeed Brasil</label>
+                    <label class="checkbox-group"><input type="checkbox" id="platGlassdoor" checked> Glassdoor</label>
+                </div>
+
+                <label class="checkbox-group" style="margin-bottom: 20px;">
+                    <input type="checkbox" id="isRemote" checked> Exigir 100% Remoto (+30 pts)
+                </label>
+
+                <button class="btn-search" id="btnSearch" onclick="triggerSearch()">
+                    <div class="spinner" id="btnSpinner"></div>
+                    <span id="btnText">🔍 Executar Varredura & Matching</span>
+                </button>
+            </div>
+
+            <!-- Painel de Vagas -->
+            <div>
+                <div class="results-header">
+                    <h3>Vagas Coletadas & Avaliadas pelo Motor</h3>
+                    <span id="resultsCount" style="font-size: 13px; color: var(--accent); font-weight: 700;">Clique no botão para iniciar</span>
+                </div>
+
+                <div class="jobs-list" id="jobsContainer">
+                    <div style="text-align:center; padding: 50px 20px; color: var(--text-muted); background: var(--bg-card); border-radius: 12px; border: 1px dashed var(--border);">
+                        Selecione seus filtros e clique em <b>"Executar Varredura & Matching"</b> para rodar o algoritmo de avaliação em tempo real.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal da Carta de Apresentação -->
+    <div class="modal-overlay" id="letterModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 id="modalJobTitle" style="font-size: 16px; color: #fff;">Carta de Apresentação</h3>
+                    <div id="modalCompany" style="font-size: 12px; color: var(--text-muted);">Empresa</div>
+                </div>
+                <button onclick="closeModal()" style="background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <textarea class="letter-textarea" id="letterContent" readonly></textarea>
+            </div>
+            <div class="modal-footer">
+                <span id="copyFeedback" style="font-size: 13px; color: var(--accent); font-weight: 600;"></span>
+                <div>
+                    <button class="btn-action" onclick="closeModal()">Fechar</button>
+                    <button class="btn-action btn-ai" onclick="copyLetter()">📋 Copiar Texto Completo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function triggerSearch() {
+            const btn = document.getElementById('btnSearch');
+            const spinner = document.getElementById('btnSpinner');
+            const btnText = document.getElementById('btnText');
+            const container = document.getElementById('jobsContainer');
+            const resultsCount = document.getElementById('resultsCount');
+
+            btn.disabled = true;
+            spinner.style.display = 'block';
+            btnText.innerText = 'Varrendo Plataformas...';
+            container.innerHTML = '<div style="text-align:center; padding: 40px; color: var(--text-muted);"><div class="spinner" style="display:inline-block; margin-bottom:12px;"></div><div>Coletando vagas e calculando score de aderência...</div></div>';
+
+            const payload = {
+                search_term: document.getElementById('searchTerm').value,
+                location: document.getElementById('location').value,
+                is_remote: document.getElementById('isRemote').checked,
+                min_salary: 8000.0,
+                negative_keywords: document.getElementById('negativeKeywords').value.split(',').map(s => s.trim()).filter(Boolean),
+                platforms: ['linkedin', 'indeed', 'glassdoor']
+            };
+
+            try {
+                const res = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                resultsCount.innerText = `${data.total} vagas avaliadas pelo motor`;
+                container.innerHTML = '';
+
+                data.jobs.forEach(job => {
+                    const isVeto = !job.is_qualified && job.score === 0;
+                    const scoreClass = isVeto ? 'score-veto' : (job.score >= 70 ? 'score-high' : 'score-med');
+                    const cardClass = isVeto ? 'disqualified' : (job.score >= 70 ? 'qualified' : '');
+
+                    const card = document.createElement('div');
+                    card.className = `job-card ${cardClass}`;
+                    card.innerHTML = `
+                        <div class="job-top">
+                            <div>
+                                <a href="${job.url}" target="_blank" class="job-title">${job.title} ↗</a>
+                                <div class="job-company">${job.company} • 📍 ${job.location}</div>
+                            </div>
+                            <div class="score-pill ${scoreClass}">
+                                ${isVeto ? '⛔ HARD VETO' : `🎯 ${job.score}% MATCH`}
+                            </div>
+                        </div>
+
+                        <div class="job-meta-row">
+                            <span class="job-tag">Plataforma: ${job.platform.toUpperCase()}</span>
+                            <span class="job-tag">Modalidade: ${job.modality.toUpperCase()}</span>
+                            <span class="job-tag">Salário: ${job.salary}</span>
+                        </div>
+
+                        <div class="job-desc">${job.description}</div>
+
+                        <div class="reasons-box">
+                            <ul>
+                                ${job.reasons.map(r => `<li>${r.includes('Desqualificado') ? '❌' : '✓'} ${r}</li>`).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="job-actions">
+                            <a href="${job.url}" target="_blank" class="btn-action">Ver Anúncio Original</a>
+                            <button class="btn-action btn-ai" onclick="openLetterModal('${encodeURIComponent(job.title)}', '${encodeURIComponent(job.company)}', '${encodeURIComponent(job.description)}')">
+                                ✍️ Gerar Carta com IA
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (err) {
+                container.innerHTML = `<div style="color:var(--danger); padding:20px;">Erro ao executar varredura: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                btnText.innerText = '🔍 Executar Varredura & Matching';
+            }
+        }
+
+        async function openLetterModal(titleEnc, companyEnc, descEnc) {
+            const title = decodeURIComponent(titleEnc);
+            const company = decodeURIComponent(companyEnc);
+            const desc = decodeURIComponent(descEnc);
+
+            document.getElementById('modalJobTitle').innerText = title;
+            document.getElementById('modalCompany').innerText = company;
+            document.getElementById('letterContent').value = 'Gerando minuta executiva personalizada com IA... Aguarde um instante.';
+            document.getElementById('copyFeedback').innerText = '';
+            document.getElementById('letterModal').style.display = 'flex';
+
+            try {
+                const res = await fetch('/api/letter', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        job_title: title,
+                        company_name: company,
+                        job_description: desc
+                    })
+                });
+                const data = await res.json();
+                document.getElementById('letterContent').value = data.letter_text;
+            } catch (err) {
+                document.getElementById('letterContent').value = 'Erro ao gerar carta: ' + err.message;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('letterModal').style.display = 'none';
+        }
+
+        function copyLetter() {
+            const text = document.getElementById('letterContent');
+            text.select();
+            document.execCommand('copy');
+            document.getElementById('copyFeedback').innerText = '✅ Carta copiada para a área de transferência!';
+            setTimeout(() => { document.getElementById('copyFeedback').innerText = ''; }, 3000);
+        }
+    </script>
+</body>
+</html>
