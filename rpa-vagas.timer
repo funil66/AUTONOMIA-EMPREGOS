@@ -1,0 +1,12 @@
+[Unit]
+Description=Timer para JARVIS RPA Vagas Career SaaS (Varredura a cada 2 horas)
+
+[Timer]
+OnBootSec=5min
+# Varredura a cada 2 horas (evitando rate limit acrílico do LinkedIn/Gupy)
+OnUnitActiveSec=2h
+RandomizedDelaySec=15m
+Unit=rpa-vagas.service
+
+[Install]
+WantedBy=timers.target

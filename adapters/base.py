@@ -3,7 +3,7 @@ Classe Base para Adaptadores de Coleta de Vagas
 """
 from abc import ABC, abstractmethod
 from typing import List
-from ..core.schemas import JobOfferBase
+from core.schemas import JobOfferBase
 
 
 class BaseJobAdapter(ABC):

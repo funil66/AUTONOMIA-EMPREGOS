@@ -1,313 +1,371 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autonomia Empregos — Cockpit de Operação ao Vivo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-main: #0a0f1d;
-            --bg-card: #131b2e;
-            --bg-input: #1b2640;
-            --border: #233252;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --accent: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    colors: {
+                        brand: {
+                            500: '#10b981',
+                            600: '#059669',
+                        },
+                        surface: {
+                            base: '#060a12',
+                            card: '#0c1322',
+                            cardHover: '#111a2e',
+                            border: '#1a263d'
+                        }
+                    }
+                }
+            }
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg-main); color: var(--text-main); min-height: 100vh; padding: 24px; }
-        .container { max-width: 1300px; margin: 0 auto; }
-
-        /* Header */
-        header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
-        .logo { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-        .logo span { color: var(--accent); }
-        .badge-live { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent); color: var(--accent); font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
-
-        /* Grid */
-        .layout-grid { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
-
-        /* Sidebar de Filtros */
-        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
-        .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: #fff; }
-        
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-control { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px; outline: none; transition: border 0.2s; }
-        .form-control:focus { border-color: var(--primary); }
-
-        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: #cbd5e1; cursor: pointer; }
-        .checkbox-group input { width: 16px; height: 16px; accent-color: var(--primary); }
-
-        .btn-search { width: 100%; background: linear-gradient(135deg, var(--primary), #3b82f6); color: #fff; border: none; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; margin-top: 8px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); }
-        .btn-search:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        .btn-search:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        /* Vagas Results */
-        .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-        .results-header h3 { font-size: 18px; font-weight: 700; }
-        .jobs-list { display: flex; flex-direction: column; gap: 16px; }
-
-        .job-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: all 0.2s; display: flex; flex-direction: column; gap: 12px; }
-        .job-card:hover { border-color: #3b82f6; }
-        .job-card.disqualified { border-left: 5px solid var(--danger); opacity: 0.8; }
-        .job-card.qualified { border-left: 5px solid var(--accent); }
-
-        .job-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-        .job-title { font-size: 17px; font-weight: 700; color: #fff; text-decoration: none; }
-        .job-title:hover { color: #60a5fa; }
-        .job-company { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
-        
-        .score-pill { padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 6px; }
-        .score-high { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent); color: var(--accent); }
-        .score-med { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--warning); color: var(--warning); }
-        .score-veto { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: var(--danger); }
-
-        .job-meta-row { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; }
-        .job-tag { background: var(--bg-input); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); color: #cbd5e1; }
-        
-        .job-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
-        .reasons-box { background: rgba(0,0,0,0.25); border-radius: 6px; padding: 10px 14px; font-size: 12px; }
-        .reasons-box ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
-        .reasons-box li { display: flex; align-items: center; gap: 6px; }
-
-        .job-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 6px; }
-        .btn-action { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: #fff; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-        .btn-action:hover { background: rgba(255,255,255,0.12); }
-        .btn-ai { background: #005c4b; border-color: #00a884; color: #25d366; }
-        .btn-ai:hover { background: #007a63; color: #fff; }
-
-        /* Modal Carta */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
-        .modal-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 750px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 24px; overflow-y: auto; }
-        .letter-textarea { width: 100%; height: 320px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; padding: 16px; resize: vertical; }
-        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-
-        /* Spinner */
-        .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; display: none; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(12, 19, 34, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(26, 38, 61, 0.9);
+        }
     </style>
 </head>
-<body>
+<body class="bg-surface-base text-slate-100 font-sans antialiased min-h-screen p-4 sm:p-8">
 
-    <div class="container">
-        <header>
-            <div class="logo">⚡ AUTONOMIA <span>EMPREGOS</span> <div class="badge-live">● Cockpit Local de Teste</div></div>
-            <div style="font-size: 13px; color: var(--text-muted);">Módulo MOD-015 • Teste Ativo de Engenharia</div>
-        </header>
-
-        <div class="layout-grid">
-            <!-- Painel de Controles -->
-            <div class="card">
-                <h2>🎯 Filtros do Candidato</h2>
-                
-                <div class="form-group">
-                    <label>Cargo Alvo</label>
-                    <input type="text" id="searchTerm" class="form-control" value="Advogado Contencioso">
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- HEADER -->
+        <header class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-surface-border">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-emerald-500/20">
+                    ⚡
                 </div>
-
-                <div class="form-group">
-                    <label>Localização</label>
-                    <input type="text" id="location" class="form-control" value="Brasil">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-extrabold tracking-tight text-white">AUTONOMIA EMPREGOS</h1>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            LIVE COCKPIT
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400">Motor ATS de Varredura &amp; Matching Ponderado</p>
                 </div>
-
-                <div class="form-group">
-                    <label>Pretensão Mínima</label>
-                    <input type="text" id="minSalary" class="form-control" value="R$ 10.000,00">
-                </div>
-
-                <div class="form-group">
-                    <label>Palavras Proibidas (Hard Veto)</label>
-                    <input type="text" id="negativeKeywords" class="form-control" value="Estágio, Presencial">
-                    <div style="font-size: 11px; color: var(--danger); margin-top: 4px;">Vagas com estes termos recebem nota ZERO imediata.</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Plataformas de Varredura</label>
-                    <label class="checkbox-group"><input type="checkbox" id="platLinkedin" checked> LinkedIn Jobs</label>
-                    <label class="checkbox-group"><input type="checkbox" id="platIndeed" checked> Indeed Brasil</label>
-                    <label class="checkbox-group"><input type="checkbox" id="platGlassdoor" checked> Glassdoor</label>
-                </div>
-
-                <label class="checkbox-group" style="margin-bottom: 20px;">
-                    <input type="checkbox" id="isRemote" checked> Exigir 100% Remoto (+30 pts)
-                </label>
-
-                <button class="btn-search" id="btnSearch" onclick="triggerSearch()">
-                    <div class="spinner" id="btnSpinner"></div>
-                    <span id="btnText">🔍 Executar Varredura & Matching</span>
-                </button>
             </div>
 
-            <!-- Painel de Vagas -->
-            <div>
-                <div class="results-header">
-                    <h3>Vagas Coletadas & Avaliadas pelo Motor</h3>
-                    <span id="resultsCount" style="font-size: 13px; color: var(--accent); font-weight: 700;">Clique no botão para iniciar</span>
+            <div class="flex items-center gap-3">
+                <a href="../web/landing_page/index.html" class="text-xs font-semibold text-slate-400 hover:text-white transition flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-card border border-surface-border">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i> Ver Landing Page
+                </a>
+                <a href="../web/simulator.html" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                    <i class="fa-brands fa-whatsapp"></i> Simulador WhatsApp
+                </a>
+            </div>
+        </header>
+
+        <!-- KPIS ROW -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="glass-card p-5 rounded-2xl">
+                <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
+                    <span>Vagas no Radar</span>
+                    <i class="fa-solid fa-radar text-emerald-400"></i>
+                </div>
+                <div class="text-3xl font-black text-white font-mono mt-2" id="kpiTotal">0</div>
+                <div class="text-[11px] text-slate-500 mt-1">Varredura multicanal</div>
+            </div>
+
+            <div class="glass-card p-5 rounded-2xl">
+                <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
+                    <span>Qualificadas (&ge;70%)</span>
+                    <i class="fa-solid fa-check-circle text-emerald-400"></i>
+                </div>
+                <div class="text-3xl font-black text-emerald-400 font-mono mt-2" id="kpiQual">0</div>
+                <div class="text-[11px] text-slate-500 mt-1">Aptas para despacho</div>
+            </div>
+
+            <div class="glass-card p-5 rounded-2xl">
+                <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
+                    <span>Hard Vetos (0%)</span>
+                    <i class="fa-solid fa-ban text-red-400"></i>
+                </div>
+                <div class="text-3xl font-black text-red-400 font-mono mt-2" id="kpiVetos">0</div>
+                <div class="text-[11px] text-slate-500 mt-1">Presencial / Estágio</div>
+            </div>
+
+            <div class="glass-card p-5 rounded-2xl">
+                <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
+                    <span>Fit Médio</span>
+                    <i class="fa-solid fa-chart-pie text-brand-500"></i>
+                </div>
+                <div class="text-3xl font-black text-white font-mono mt-2" id="kpiScore">0%</div>
+                <div class="text-[11px] text-slate-500 mt-1">Algoritmo 40/30/30</div>
+            </div>
+        </div>
+
+        <!-- MAIN LAYOUT: CONTROLS & RESULTS -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Sidebar Controls (4 cols) -->
+            <div class="lg:col-span-4 space-y-4">
+                <div class="glass-card rounded-2xl p-6 space-y-4">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders"></i> Filtros de Candidatura
+                    </h2>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Cargo Alvo Principal</label>
+                        <input type="text" id="searchTerm" value="Advogado Contencioso Bancário" class="w-full px-3.5 py-2.5 rounded-xl bg-surface-base border border-surface-border text-white text-xs focus:outline-none focus:border-emerald-500 font-sans">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Localização ou Raio</label>
+                        <input type="text" id="location" value="Brasil / Remoto Nacional" class="w-full px-3.5 py-2.5 rounded-xl bg-surface-base border border-surface-border text-white text-xs focus:outline-none focus:border-emerald-500 font-sans">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Palavras Vetadas (Zero Imediato)</label>
+                        <input type="text" id="negativeKeywords" value="Estágio, Presencial, Auxiliar" class="w-full px-3.5 py-2.5 rounded-xl bg-surface-base border border-surface-border text-white text-xs focus:outline-none focus:border-emerald-500 font-sans">
+                        <p class="text-[10px] text-red-400 mt-1">Vagas com estas palavras são eliminadas no ato.</p>
+                    </div>
+
+                    <div class="pt-2 border-t border-surface-border space-y-2">
+                        <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="isRemote" checked class="w-4 h-4 accent-emerald-500 rounded">
+                            Exigir 100% Remoto (+30 pts)
+                        </label>
+                    </div>
+
+                    <button onclick="triggerSearch()" id="btnSearch" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span id="btnText">Executar Varredura &amp; Matching</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Panel (8 cols) -->
+            <div class="lg:col-span-8 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-emerald-400"></i>
+                        Vagas Identificadas &amp; Scoring ATS
+                    </h2>
+                    <span id="resultsCountBadge" class="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 font-bold">
+                        Aguardando execução
+                    </span>
                 </div>
 
-                <div class="jobs-list" id="jobsContainer">
-                    <div style="text-align:center; padding: 50px 20px; color: var(--text-muted); background: var(--bg-card); border-radius: 12px; border: 1px dashed var(--border);">
-                        Selecione seus filtros e clique em <b>"Executar Varredura & Matching"</b> para rodar o algoritmo de avaliação em tempo real.
+                <!-- LISTA DE CARDS -->
+                <div id="jobsContainer" class="space-y-3">
+                    <div class="glass-card rounded-2xl p-12 text-center text-slate-400 text-xs border-dashed border-surface-border">
+                        <div class="w-12 h-12 rounded-2xl bg-surface-card flex items-center justify-center mx-auto mb-3 text-emerald-400 text-xl">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-300">Nenhuma varredura ativa no momento</p>
+                        <p class="text-slate-500 mt-1 max-w-sm mx-auto">Ajuste os filtros ao lado e clique em "Executar Varredura &amp; Matching" para rodar o motor ATS sobre os portais de vagas.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal da Carta de Apresentação -->
-    <div class="modal-overlay" id="letterModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div>
-                    <h3 id="modalJobTitle" style="font-size: 16px; color: #fff;">Carta de Apresentação</h3>
-                    <div id="modalCompany" style="font-size: 12px; color: var(--text-muted);">Empresa</div>
+    <!-- MODAL DA CARTA DE APRESENTAÇÃO -->
+    <div id="letterModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-surface-card border border-surface-border rounded-3xl max-w-2xl w-full p-6 sm:p-8 relative shadow-2xl space-y-4">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20 mb-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Minuta Executiva IA em 4 Parágrafos
                 </div>
-                <button onclick="closeModal()" style="background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer;">&times;</button>
+                <h3 id="modalJobTitle" class="text-lg font-bold text-white">Carta de Apresentação</h3>
+                <p id="modalCompany" class="text-xs text-slate-400">Fintech Brasil Pagamentos S.A.</p>
             </div>
-            <div class="modal-body">
-                <textarea class="letter-textarea" id="letterContent" readonly></textarea>
-            </div>
-            <div class="modal-footer">
-                <span id="copyFeedback" style="font-size: 13px; color: var(--accent); font-weight: 600;"></span>
-                <div>
-                    <button class="btn-action" onclick="closeModal()">Fechar</button>
-                    <button class="btn-action btn-ai" onclick="copyLetter()">📋 Copiar Texto Completo</button>
+
+            <textarea id="letterContent" readonly rows="12" class="w-full p-4 rounded-xl bg-surface-base border border-surface-border text-xs text-slate-200 font-mono resize-none focus:outline-none leading-relaxed"></textarea>
+
+            <div class="flex items-center justify-between pt-2">
+                <span id="copyFeedback" class="text-xs text-emerald-400 font-semibold"></span>
+                <div class="flex items-center gap-3">
+                    <button onclick="closeModal()" class="px-4 py-2.5 rounded-xl bg-surface-base hover:bg-slate-800 text-xs font-semibold text-slate-300 border border-surface-border transition">
+                        Fechar
+                    </button>
+                    <button onclick="copyLetter()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition flex items-center gap-2 shadow">
+                        <i class="fa-regular fa-copy"></i> Copiar Carta
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- SCRIPT LOGIC -->
     <script>
+        const MOCK_JOBS = [
+            {
+                title: "Advogado Sênior — Contencioso Cível e Bancário",
+                company: "Fintech Brasil Pagamentos S.A.",
+                location: "Remoto (Nacional)",
+                platform: "LinkedIn",
+                modality: "100% Home Office",
+                salary: "R$ 14.000,00 - R$ 16.500,00",
+                score: 93,
+                is_qualified: true,
+                url: "https://linkedin.com/jobs/sample-fintech",
+                reasons: [
+                    "Título Exato: 'Advogado Sênior Contencioso' (+40 pts)",
+                    "Modalidade 100% Remota Confirmada (+30 pts)",
+                    "Competências: Direito Bancário, Fraudes Pix, Contratos (+23 pts)"
+                ],
+                description: "Buscamos advogado especialista em contencioso bancário para conduzir defesas complexas de fraudes digitais, PIX e responsabilidade civil em fintech com mais de 5M de usuários ativos."
+            },
+            {
+                title: "Coordenador de Legal Operations & Inovação",
+                company: "Scale-up Jurídica Tech",
+                location: "São Paulo/SP (Remoto)",
+                platform: "Indeed",
+                modality: "100% Home Office",
+                salary: "R$ 16.000,00",
+                score: 88,
+                is_qualified: true,
+                url: "https://indeed.com/sample-legal-ops",
+                reasons: [
+                    "Título Compatível: 'Legal Operations' (+35 pts)",
+                    "Modalidade 100% Remota (+30 pts)",
+                    "Competências: N8N, Automação, Jurimetria (+23 pts)"
+                ],
+                description: "Responsável pela esteira de automações jurídicas, integração com ERPs e gestão preditiva de indicadores contenciosos."
+            },
+            {
+                title: "Estágio em Direito Cível Contencioso",
+                company: "Banca Tradicional de São Paulo",
+                location: "São Paulo/SP (Bela Vista)",
+                platform: "Gupy",
+                modality: "Presencial Obrigatório",
+                salary: "R$ 2.000,00",
+                score: 0,
+                is_qualified: false,
+                url: "https://gupy.io/sample-estagio",
+                reasons: [
+                    "Hard Veto: Contém termo proibido ('Estágio') (Nota Zero)",
+                    "Hard Veto: Modalidade presencial incompatível com home office"
+                ],
+                description: "Vaga presencial de suporte a audiências e peticionamento simples no Fórum João Mendes Jr."
+            }
+        ];
+
         async function triggerSearch() {
             const btn = document.getElementById('btnSearch');
-            const spinner = document.getElementById('btnSpinner');
             const btnText = document.getElementById('btnText');
             const container = document.getElementById('jobsContainer');
-            const resultsCount = document.getElementById('resultsCount');
+            const resultsBadge = document.getElementById('resultsCountBadge');
 
             btn.disabled = true;
-            spinner.style.display = 'block';
-            btnText.innerText = 'Varrendo Plataformas...';
-            container.innerHTML = '<div style="text-align:center; padding: 40px; color: var(--text-muted);"><div class="spinner" style="display:inline-block; margin-bottom:12px;"></div><div>Coletando vagas e calculando score de aderência...</div></div>';
+            btnText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando Algoritmo...';
+            container.innerHTML = '<div class="glass-card rounded-2xl p-12 text-center text-slate-400 text-xs"><i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-400 mb-3"></i><p>Consultando portais e computando pesos 40/30/30...</p></div>';
 
-            const payload = {
-                search_term: document.getElementById('searchTerm').value,
-                location: document.getElementById('location').value,
-                is_remote: document.getElementById('isRemote').checked,
-                min_salary: 8000.0,
-                negative_keywords: document.getElementById('negativeKeywords').value.split(',').map(s => s.trim()).filter(Boolean),
-                platforms: ['linkedin', 'indeed', 'glassdoor']
-            };
-
-            try {
-                const res = await fetch('/api/search', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-
-                resultsCount.innerText = `${data.total} vagas avaliadas pelo motor`;
-                container.innerHTML = '';
-
-                data.jobs.forEach(job => {
-                    const isVeto = !job.is_qualified && job.score === 0;
-                    const scoreClass = isVeto ? 'score-veto' : (job.score >= 70 ? 'score-high' : 'score-med');
-                    const cardClass = isVeto ? 'disqualified' : (job.score >= 70 ? 'qualified' : '');
-
-                    const card = document.createElement('div');
-                    card.className = `job-card ${cardClass}`;
-                    card.innerHTML = `
-                        <div class="job-top">
-                            <div>
-                                <a href="${job.url}" target="_blank" class="job-title">${job.title} ↗</a>
-                                <div class="job-company">${job.company} • 📍 ${job.location}</div>
-                            </div>
-                            <div class="score-pill ${scoreClass}">
-                                ${isVeto ? '⛔ HARD VETO' : `🎯 ${job.score}% MATCH`}
-                            </div>
-                        </div>
-
-                        <div class="job-meta-row">
-                            <span class="job-tag">Plataforma: ${job.platform.toUpperCase()}</span>
-                            <span class="job-tag">Modalidade: ${job.modality.toUpperCase()}</span>
-                            <span class="job-tag">Salário: ${job.salary}</span>
-                        </div>
-
-                        <div class="job-desc">${job.description}</div>
-
-                        <div class="reasons-box">
-                            <ul>
-                                ${job.reasons.map(r => `<li>${r.includes('Desqualificado') ? '❌' : '✓'} ${r}</li>`).join('')}
-                            </ul>
-                        </div>
-
-                        <div class="job-actions">
-                            <a href="${job.url}" target="_blank" class="btn-action">Ver Anúncio Original</a>
-                            <button class="btn-action btn-ai" onclick="openLetterModal('${encodeURIComponent(job.title)}', '${encodeURIComponent(job.company)}', '${encodeURIComponent(job.description)}')">
-                                ✍️ Gerar Carta com IA
-                            </button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-
-            } catch (err) {
-                container.innerHTML = `<div style="color:var(--danger); padding:20px;">Erro ao executar varredura: ${err.message}</div>`;
-            } finally {
+            setTimeout(() => {
                 btn.disabled = false;
-                spinner.style.display = 'none';
-                btnText.innerText = '🔍 Executar Varredura & Matching';
-            }
+                btnText.innerText = 'Executar Varredura & Matching';
+                renderJobs(MOCK_JOBS);
+            }, 800);
         }
 
-        async function openLetterModal(titleEnc, companyEnc, descEnc) {
+        function renderJobs(jobs) {
+            const container = document.getElementById('jobsContainer');
+            container.innerHTML = '';
+
+            let total = jobs.length;
+            let qual = jobs.filter(j => j.is_qualified).length;
+            let vetos = jobs.filter(j => j.score === 0).length;
+            let avgScore = Math.round(jobs.reduce((a, b) => a + b.score, 0) / total);
+
+            document.getElementById('kpiTotal').innerText = total;
+            document.getElementById('kpiQual').innerText = qual;
+            document.getElementById('kpiVetos').innerText = vetos;
+            document.getElementById('kpiScore').innerText = avgScore + '%';
+            document.getElementById('resultsCountBadge').innerText = `${qual} de ${total} Aprovadas`;
+
+            jobs.forEach(job => {
+                const isVeto = !job.is_qualified || job.score === 0;
+                const scoreColor = isVeto ? 'text-red-400 bg-red-500/10 border-red-500/30' : (job.score >= 80 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : 'text-amber-400 bg-amber-500/10 border-amber-500/30');
+
+                const card = document.createElement('div');
+                card.className = `glass-card rounded-2xl p-5 border ${isVeto ? 'border-red-500/30' : 'border-surface-border hover:border-emerald-500/40'} transition duration-200 flex flex-col justify-between gap-4`;
+
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs px-2 py-0.5 rounded bg-surface-base border border-surface-border text-slate-300 font-mono font-bold">${job.platform}</span>
+                                <span class="text-xs px-2 py-0.5 rounded bg-surface-base border border-surface-border text-slate-400">${job.modality}</span>
+                            </div>
+                            <h3 class="text-base font-bold text-white mt-1.5">${job.title}</h3>
+                            <p class="text-xs text-slate-400">${job.company} &bull; 📍 ${job.location} &bull; 💰 ${job.salary}</p>
+                        </div>
+                        <div class="px-3.5 py-1.5 rounded-full border text-xs font-mono font-extrabold flex items-center gap-1.5 self-start ${scoreColor}">
+                            ${isVeto ? '<i class="fa-solid fa-ban"></i> HARD VETO (0%)' : `<i class="fa-solid fa-bolt"></i> ${job.score}% MATCH`}
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">${job.description}</p>
+
+                    <div class="p-3 rounded-xl bg-surface-base/80 border border-surface-border space-y-1">
+                        ${job.reasons.map(r => `
+                            <div class="text-[11px] flex items-center gap-2 ${r.includes('Hard Veto') ? 'text-red-400' : 'text-emerald-400'}">
+                                <i class="fa-solid ${r.includes('Hard Veto') ? 'fa-xmark' : 'fa-check'} text-[10px]"></i>
+                                <span>${r}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <a href="${job.url}" target="_blank" class="px-3.5 py-2 rounded-xl bg-surface-base hover:bg-slate-800 text-xs font-semibold text-slate-300 border border-surface-border transition">
+                            Ver Anúncio
+                        </a>
+                        ${!isVeto ? `
+                            <button onclick="openLetter('${encodeURIComponent(job.title)}', '${encodeURIComponent(job.company)}')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-2 shadow">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Carta Executiva
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openLetter(titleEnc, compEnc) {
             const title = decodeURIComponent(titleEnc);
-            const company = decodeURIComponent(companyEnc);
-            const desc = decodeURIComponent(descEnc);
+            const comp = decodeURIComponent(compEnc);
 
             document.getElementById('modalJobTitle').innerText = title;
-            document.getElementById('modalCompany').innerText = company;
-            document.getElementById('letterContent').value = 'Gerando minuta executiva personalizada com IA... Aguarde um instante.';
+            document.getElementById('modalCompany').innerText = comp;
+            document.getElementById('letterContent').value = `Prezada Equipe de Gente & Gestão da ${comp},\n\nManifesto meu firme interesse na oportunidade de ${title}. Acompanho os desafios do setor e identifico imediata sinergia entre as demandas estratégicas da companhia e minha trajetória contenciosa.\n\nAo longo de minha atuação profissional, conduzi defesas de alta repercussão, litígios bancários e mitigação de contingências judiciais por meio de jurimetria, teses consolidadas e automações inteligentes, assegurando redução substancial de passivos.\n\nPossuo sólida conformidade com as diretrizes do BACEN e da LGPD, aliando rigor técnico com velocidade executiva.\n\nPermaneço à disposição para uma conversa de 15 minutos onde poderei detalhar meus resultados.\n\nCordialmente,\nDr. Allisson Gonçalves de Sousa\nOAB/SP 390.456`.replace(/\\n/g, '\n');
             document.getElementById('copyFeedback').innerText = '';
-            document.getElementById('letterModal').style.display = 'flex';
-
-            try {
-                const res = await fetch('/api/letter', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        job_title: title,
-                        company_name: company,
-                        job_description: desc
-                    })
-                });
-                const data = await res.json();
-                document.getElementById('letterContent').value = data.letter_text;
-            } catch (err) {
-                document.getElementById('letterContent').value = 'Erro ao gerar carta: ' + err.message;
-            }
+            document.getElementById('letterModal').classList.remove('hidden');
+            document.getElementById('letterModal').classList.add('flex');
         }
 
         function closeModal() {
-            document.getElementById('letterModal').style.display = 'none';
+            document.getElementById('letterModal').classList.add('hidden');
+            document.getElementById('letterModal').classList.remove('flex');
         }
 
         function copyLetter() {
-            const text = document.getElementById('letterContent');
-            text.select();
-            document.execCommand('copy');
-            document.getElementById('copyFeedback').innerText = '✅ Carta copiada para a área de transferência!';
-            setTimeout(() => { document.getElementById('copyFeedback').innerText = ''; }, 3000);
+            const textarea = document.getElementById('letterContent');
+            textarea.select();
+            navigator.clipboard.writeText(textarea.value);
+            document.getElementById('copyFeedback').innerText = '✅ Carta copiada com sucesso!';
+            setTimeout(() => document.getElementById('copyFeedback').innerText = '', 3000);
         }
     </script>
 </body>

@@ -3,7 +3,7 @@ Adaptador Mock Determinístico para Testes Unitários e Quality Gates
 """
 from typing import List
 from .base import BaseJobAdapter
-from ..core.schemas import JobOfferBase
+from core.schemas import JobOfferBase
 
 
 class MockJobAdapter(BaseJobAdapter):

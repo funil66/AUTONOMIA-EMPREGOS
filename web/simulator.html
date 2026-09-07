@@ -4,124 +4,474 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autonomia Empregos — Simulador Interativo WhatsApp da Clara</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #0b141a; color: #e9edef; display: flex; height: 100vh; overflow: hidden; }
+        :root {
+            --wa-bg: #0b141a;
+            --wa-panel: #111b21;
+            --wa-bubble-in: #202c33;
+            --wa-bubble-out: #005c4b;
+            --wa-green: #00a884;
+            --wa-green-light: #25d366;
+            --wa-text: #e9edef;
+            --wa-text-muted: #8696a0;
+            --wa-border: #222d34;
+        }
 
-        /* Painel Lateral de Controle do Motor */
-        .sidebar { width: 380px; background: #111b21; border-right: 1px solid #222d34; display: flex; flex-direction: column; padding: 20px; }
-        .sidebar h2 { font-size: 18px; color: #00a884; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .engine-card { background: #202c33; border-radius: 8px; padding: 14px; margin-bottom: 15px; font-size: 13px; }
-        .engine-card h3 { font-size: 14px; color: #fff; margin-bottom: 8px; }
-        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-        .badge-active { background: #005c4b; color: #25d366; }
-        .metric-row { display: flex; justify-content: space-between; margin-top: 8px; color: #8696a0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--wa-bg); color: var(--wa-text); display: flex; height: 100vh; overflow: hidden; }
+
+        /* PAINEL LATERAL DE CONTROLE DO MOTOR */
+        .sidebar {
+            width: 420px;
+            background: var(--wa-panel);
+            border-right: 1px solid var(--wa-border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--wa-border);
+        }
+        .sidebar h2 { font-size: 16px; color: var(--wa-green-light); display: flex; align-items: center; gap: 8px; font-weight: 700; }
+        .engine-card {
+            background: #182229;
+            border: 1px solid var(--wa-border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 14px;
+            font-size: 13px;
+        }
+        .engine-card h3 { font-size: 13px; color: #fff; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .badge-active { background: #005c4b; color: #25d366; border: 1px solid #00a884; }
+        .metric-row { display: flex; justify-content: space-between; margin-top: 8px; color: var(--wa-text-muted); font-size: 12px; }
         .metric-row span:last-child { color: #fff; font-weight: 600; }
 
-        /* Área do WhatsApp */
-        .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #0b141a; background-image: radial-gradient(#182229 1px, transparent 1px); background-size: 16px 16px; }
-        .chat-header { background: #202c33; padding: 12px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #222d34; }
-        .avatar { width: 44px; height: 44px; border-radius: 50%; background: #00a884; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; color: #fff; }
-        .chat-title { font-size: 16px; font-weight: 600; color: #e9edef; }
-        .chat-subtitle { font-size: 12px; color: #8696a0; }
+        /* CONTROLES DE SIMULAÇÃO */
+        .btn-scenario {
+            width: 100%;
+            background: #202c33;
+            border: 1px solid var(--wa-border);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            margin-top: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .btn-scenario:hover {
+            background: #2a3942;
+            border-color: var(--wa-green);
+        }
 
-        /* Mensagens */
-        .messages { flex-grow: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .message { max-width: 65%; padding: 10px 14px; border-radius: 8px; font-size: 14px; line-height: 1.45; position: relative; word-wrap: break-word; }
-        .msg-in { background: #202c33; align-self: flex-start; border-top-left-radius: 0; }
-        .msg-out { background: #005c4b; align-self: flex-end; border-top-right-radius: 0; }
-        .msg-time { font-size: 11px; color: #8696a0; text-align: right; margin-top: 4px; }
-        .job-card { background: #111b21; border-left: 4px solid #00a884; padding: 10px; border-radius: 4px; margin-top: 8px; }
-        .job-title { font-weight: 700; color: #25d366; font-size: 15px; margin-bottom: 4px; }
+        /* ÁREA DO CHAT WHATSAPP */
+        .chat-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0b141a;
+            background-image: radial-gradient(#182229 1.5px, transparent 1.5px);
+            background-size: 20px 20px;
+        }
+        .chat-header {
+            background: #202c33;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--wa-border);
+        }
+        .user-info { display: flex; items-center; gap: 12px; }
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00a884, #128c7e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .chat-title { font-size: 15px; font-weight: 600; color: #e9edef; }
+        .chat-subtitle { font-size: 12px; color: var(--wa-green-light); display: flex; align-items: center; gap: 6px; }
+
+        /* MENSAGENS */
+        .messages {
+            flex-grow: 1;
+            padding: 20px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            max-width: 68%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.45;
+            position: relative;
+            word-wrap: break-word;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .msg-in { background: var(--wa-bubble-in); align-self: flex-start; border-top-left-radius: 0; }
+        .msg-out { background: var(--wa-bubble-out); align-self: flex-end; border-top-right-radius: 0; }
+        .msg-time { font-size: 11px; color: var(--wa-text-muted); text-align: right; margin-top: 4px; display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+        
+        .job-card {
+            background: #111b21;
+            border-left: 4px solid var(--wa-green-light);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        .job-title { font-weight: 700; color: var(--wa-green-light); font-size: 14px; margin-bottom: 4px; }
         .job-meta { font-size: 12px; color: #aebac1; margin-bottom: 6px; }
+        .match-tag { font-size: 11px; color: #00a884; font-weight: 700; background: rgba(0, 168, 132, 0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; }
 
-        /* Barra de Entrada */
-        .chat-footer { background: #202c33; padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
-        .input-box { flex-grow: 1; background: #2a3942; border: none; outline: none; color: #e9edef; padding: 12px 16px; border-radius: 8px; font-size: 14px; }
-        .send-btn { background: #00a884; border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        /* BARRA DE DIGITAÇÃO */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: var(--wa-bubble-in);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--wa-text-muted);
+            align-items: center;
+            gap: 6px;
+        }
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--wa-green);
+            border-radius: 50%;
+            animation: typingBounce 1.2s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+        }
+
+        /* FOOTER DE ENTRADA */
+        .chat-footer {
+            background: #202c33;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-top: 1px solid var(--wa-border);
+        }
+        .input-box {
+            flex-grow: 1;
+            background: #2a3942;
+            border: none;
+            outline: none;
+            color: #e9edef;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        .send-btn {
+            background: var(--wa-green);
+            border: none;
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: transform 0.15s;
+        }
+        .send-btn:hover { transform: scale(1.05); }
+
+        /* MODAL CARTA */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .modal-content {
+            background: var(--wa-panel);
+            border: 1px solid var(--wa-border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 680px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .letter-view {
+            background: #182229;
+            border: 1px solid var(--wa-border);
+            padding: 16px;
+            border-radius: 10px;
+            color: #e9edef;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 380px;
+            overflow-y: auto;
+            white-space: pre-line;
+            font-family: 'JetBrains Mono', monospace;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Lateral do Motor -->
+    <!-- PAINEL LATERAL DE CONTROLE -->
     <div class="sidebar">
-        <h2>⚡ Motor de Busca & IA</h2>
-        <div class="engine-card">
-            <h3>Status do Candidato</h3>
-            <span class="status-badge badge-active" id="engineStatus">Assinatura Ativa (Auto-Sniper)</span>
-            <div class="metric-row"><span>Candidato:</span> <span id="candidateName">Dr. Allisson Sousa</span></div>
-            <div class="metric-row"><span>Área Alvo:</span> <span>Contencioso Bancário / Remoto</span></div>
-            <div class="metric-row"><span>Pretensão:</span> <span>R$ 12.000+</span></div>
+        <div class="sidebar-header">
+            <h2><i class="fa-solid fa-microchip"></i> Cockpit do Copiloto</h2>
+            <span class="status-badge badge-active">Motor 24/7 Ativo</span>
         </div>
 
         <div class="engine-card">
-            <h3>Monitoramento Multi-Plataformas</h3>
-            <div class="metric-row"><span>LinkedIn:</span> <span style="color:#25d366;">Ativo (28 vagas)</span></div>
-            <div class="metric-row"><span>Indeed:</span> <span style="color:#25d366;">Ativo (14 vagas)</span></div>
-            <div class="metric-row"><span>Gupy (Direto):</span> <span style="color:#25d366;">Ativo (9 vagas)</span></div>
-            <div class="metric-row"><span>Veto Imediato:</span> <span style="color:#ef4444;">Presencial, Estágio</span></div>
+            <h3>Perfil Conectado</h3>
+            <div class="metric-row"><span>Candidato:</span> <span>Dr. Allisson Sousa (OAB/SP)</span></div>
+            <div class="metric-row"><span>Cargos Alvo:</span> <span>Advogado Sênior / Contencioso</span></div>
+            <div class="metric-row"><span>Modalidade:</span> <span style="color:#25d366;">100% Remoto Obrigatório</span></div>
+            <div class="metric-row"><span>Pretensão:</span> <span>R$ 14.000+</span></div>
         </div>
 
         <div class="engine-card">
-            <h3>Algoritmo de Matching</h3>
-            <div class="metric-row"><span>Cargo Alvo:</span> <span>40% do Score</span></div>
-            <div class="metric-row"><span>Modalidade Remota:</span> <span>30% do Score</span></div>
-            <div class="metric-row"><span>Competências:</span> <span>30% do Score</span></div>
-            <div class="metric-row"><span>Nota de Corte:</span> <span>≥ 70%</span></div>
+            <h3>Disparar Simulação de Vaga</h3>
+            <p style="font-size: 11px; color: var(--wa-text-muted); margin-bottom: 8px;">Clique para simular um alerta real de oportunidade captada:</p>
+            <button onclick="simularVagaBancario()" class="btn-scenario">
+                <span>🏦 Advogado Sênior Bancário (Fintech)</span>
+                <span style="color:#25d366; font-size:11px;">93% Match</span>
+            </button>
+            <button onclick="simularVagaLegalOps()" class="btn-scenario">
+                <span>📊 Coordenador de Legal Ops (Remoto)</span>
+                <span style="color:#25d366; font-size:11px;">88% Match</span>
+            </button>
+            <button onclick="simularVagaVeto()" class="btn-scenario">
+                <span>🚫 Estágio Presencial (Hard Veto)</span>
+                <span style="color:#ef4444; font-size:11px;">0% Veto</span>
+            </button>
+        </div>
+
+        <div class="engine-card">
+            <h3>Métricas de Desempenho</h3>
+            <div class="metric-row"><span>Plataformas Mapeadas:</span> <span>LinkedIn, Indeed, Gupy</span></div>
+            <div class="metric-row"><span>Tempo de Alerta:</span> <span>&lt; 2 minutos da postagem</span></div>
+            <div class="metric-row"><span>Cartas Despachadas:</span> <span>42 neste ciclo</span></div>
+        </div>
+        
+        <div style="margin-top:auto; padding-top:12px; font-size:11px; color:var(--wa-text-muted); text-align:center;">
+            Autonomia Empregos &bull; Conectado à Evolution API WhatsApp
         </div>
     </div>
 
-    <!-- Interface do WhatsApp -->
+    <!-- ÁREA DO CHAT WHATSAPP -->
     <div class="chat-area">
         <div class="chat-header">
-            <div class="avatar">🤖</div>
-            <div>
-                <div class="chat-title">Clara — Copiloto de Carreira</div>
-                <div class="chat-subtitle">online • Autonomia Empregos v1.0</div>
+            <div class="user-info">
+                <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+                <div>
+                    <div class="chat-title">Clara — Copiloto de Carreira</div>
+                    <div class="chat-subtitle">
+                        <span style="width:8px; height:8px; border-radius:50%; background:#25d366; display:inline-block;"></span>
+                        online • monitorando vagas 24/7
+                    </div>
+                </div>
+            </div>
+            <div style="color:var(--wa-text-muted); font-size:18px; display:flex; gap:16px;">
+                <i class="fa-solid fa-magnifying-glass" style="cursor:pointer;"></i>
+                <i class="fa-solid fa-ellipsis-vertical" style="cursor:pointer;"></i>
             </div>
         </div>
 
         <div class="messages" id="messageContainer">
-            <!-- As mensagens serão inseridas dinamicamente pelo teste -->
+            <!-- Mensagem Inicial de Boas-Vindas -->
+            <div class="message msg-in">
+                <div>Olá Dr. Allisson! Sou a <b>Clara</b>, sua copiloto autônoma de carreira 24/7.</div>
+                <div style="margin-top:4px; font-size:13px; color:#aebac1;">Estou monitorando LinkedIn Jobs, Indeed e portais de empresas em busca de oportunidades com <b>fit superior a 70%</b> e 100% home-office. Quando encontrar, notificarei você aqui!</div>
+                <div class="msg-time">14:00 <i class="fa-solid fa-check-double" style="color:#53bdeb;"></i></div>
+            </div>
+        </div>
+
+        <!-- Indicador de Digitação -->
+        <div class="typing-indicator" id="typingIndicator">
+            <span>Clara está digitando</span>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
         </div>
 
         <div class="chat-footer">
-            <input type="text" class="input-box" id="messageInput" placeholder="Mensagem para Clara..." readonly>
-            <button class="send-btn" id="sendBtn">➤</button>
+            <input type="text" class="input-box" id="userInput" placeholder="Responda 'sim' para autorizar o despacho da carta..." onkeydown="handleKey(event)">
+            <button class="send-btn" onclick="sendUserReply()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- MODAL DA CARTA EXECUTIVA -->
+    <div class="modal" id="letterModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 id="modalTitle" style="color:#fff; font-size:16px;">Carta de Apresentação Gerada por IA</h3>
+                    <div id="modalSub" style="font-size:12px; color:var(--wa-text-muted);">Pronta para despacho ao RH</div>
+                </div>
+                <button onclick="closeModal()" style="background:none; border:none; color:#8696a0; font-size:20px; cursor:pointer;">&times;</button>
+            </div>
+            <div class="letter-view" id="modalText"></div>
+            <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+                <span id="copyMsg" style="color:#25d366; font-size:12px; font-weight:600;"></span>
+                <div>
+                    <button onclick="closeModal()" style="background:#202c33; border:1px solid #222d34; color:#fff; padding:8px 16px; border-radius:8px; font-size:12px; cursor:pointer; margin-right:8px;">Fechar</button>
+                    <button onclick="copyLetter()" style="background:#00a884; border:none; color:#fff; padding:8px 16px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">
+                        <i class="fa-regular fa-copy"></i> Copiar Carta
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         const container = document.getElementById('messageContainer');
+        const typing = document.getElementById('typingIndicator');
+        let currentGeneratedLetter = "";
 
-        function addMessage(text, isOut = false, isJob = false, jobData = null) {
+        function getTime() {
+            const now = new Date();
+            return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
+
+        function showTyping(show = true) {
+            typing.style.display = show ? 'inline-flex' : 'none';
+            if (show) container.scrollTop = container.scrollHeight;
+        }
+
+        function addMessage(html, isOut = false) {
             const msg = document.createElement('div');
             msg.className = `message ${isOut ? 'msg-out' : 'msg-in'}`;
-            
-            const now = new Date();
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            
-            if (isJob && jobData) {
-                msg.innerHTML = `
-                    <div>${text}</div>
-                    <div class="job-card">
-                        <div class="job-title">${jobData.title}</div>
-                        <div class="job-meta">🏢 ${jobData.company} • 🌐 ${jobData.modality} • 💰 ${jobData.salary}</div>
-                        <div style="font-size:12px; color:#00a884; font-weight:600;">Match de 93%: Título Compatível (+40) • 100% Remoto (+30) • Contencioso (+23)</div>
-                    </div>
-                    <div style="margin-top:8px; font-size:13px;">Deseja que eu redija sua <b>Carta de Apresentação com IA</b> para esta vaga? Responda com <b>'sim'</b>.</div>
-                    <div class="msg-time">${timeStr}</div>
-                `;
-            } else {
-                msg.innerHTML = `<div>${text.replace(/\\n/g, '<br>')}</div><div class="msg-time">${timeStr}</div>`;
-            }
-            
+            msg.innerHTML = html + `<div class="msg-time">${getTime()} <i class="fa-solid fa-check-double" style="color:${isOut ? '#53bdeb' : '#53bdeb'};"></i></div>`;
             container.appendChild(msg);
             container.scrollTop = container.scrollHeight;
         }
 
-        window.simulateMessage = addMessage;
+        function simularVagaBancario() {
+            showTyping(true);
+            setTimeout(() => {
+                showTyping(false);
+                const html = `
+                    <div>🎯 <b>NOVA VAGA ENCONTRADA COM ALTO FIT!</b></div>
+                    <div class="job-card">
+                        <div class="job-title">Advogado Sênior — Contencioso Cível e Bancário</div>
+                        <div class="job-meta">🏛️ Fintech Brasil Pagamentos S.A. • 🌐 100% Home Office • 💰 R$ 14.000,00 - R$ 17.000,00</div>
+                        <div class="match-tag">🔥 93% MATCH • Título Compatível (+40) • 100% Remoto (+30) • Contencioso (+23)</div>
+                    </div>
+                    <div style="margin-top:10px; font-size:13px;">
+                        Redigi uma <b>Carta Executiva de Apresentação com IA</b> focada nos seus resultados com fraudes digitais, PIX e contencioso estratégico.<br><br>
+                        Deseja visualizar ou autorizar o despacho? Responda <b>"sim"</b> ou <a href="javascript:void(0)" onclick="verCarta()" style="color:#25d366; font-weight:bold; text-decoration:underline;">clique aqui para ler a carta</a>.
+                    </div>
+                `;
+                currentGeneratedLetter = `Prezada Equipe de Seleção da Fintech Brasil Pagamentos S.A.,\n\nEscrevo para manifestar meu firme interesse na posição de Advogado Sênior em Contencioso Cível e Bancário. Acompanho a trajetória de expansão da companhia no ecossistema de meios de pagamento e identifico total alinhamento entre as demandas regulatórias da instituição e minha atuação contenciosa estratégica.\n\nAo longo de minha carreira, liderei defesas em litígios bancários de alta complexidade, fraudes sistêmicas de PIX e ações revisionais, obtendo redução substancial de passivos judiciais por meio de teses consolidadas e jurimetria aplicada. Minha abordagem combina rigor técnico processual com velocidade de resposta operacional.\n\nPossuo sólida vivência na estruturação de fluxos preventivos com equipes de produto e atendimento, assegurando estrita conformidade com as resoluções do BACEN e as diretrizes da LGPD, o que reduz custos de contingência e fortalece a reputação da marca.\n\nEstou à disposição para uma conversa executiva de 15 minutos em que poderei detalhar como minha experiência técnica contribuirá para a blindagem jurídica da fintech.\n\nAtenciosamente,\nDr. Allisson Gonçalves de Sousa\nOAB/SP 390.456`;
+                addMessage(html);
+            }, 1200);
+        }
+
+        function simularVagaLegalOps() {
+            showTyping(true);
+            setTimeout(() => {
+                showTyping(false);
+                const html = `
+                    <div>🎯 <b>OPORTUNIDADE DE LEGAL OPERATIONS IDENTIFICADA!</b></div>
+                    <div class="job-card">
+                        <div class="job-title">Coordenador de Legal Ops & Automação</div>
+                        <div class="job-meta">🚀 Scale-up Jurídica Tech • 🌐 Remoto Nacional • 💰 R$ 16.000,00</div>
+                        <div class="match-tag">✨ 88% MATCH • Legal Ops (+40) • Remoto (+30) • IA & Automação (+18)</div>
+                    </div>
+                    <div style="margin-top:10px; font-size:13px;">
+                        Esta vaga valoriza perfis com domínio de agentes autônomos, N8N, jurimetria e gestão de correspondentes. Carta já minutada!
+                    </div>
+                `;
+                addMessage(html);
+            }, 1000);
+        }
+
+        function simularVagaVeto() {
+            showTyping(true);
+            setTimeout(() => {
+                showTyping(false);
+                const html = `
+                    <div style="color:#ef4444;">⛔ <b>VAGA VETADA PELO MOTOR (0% FIT)</b></div>
+                    <div style="font-size:12px; color:#8696a0; margin-top:4px;">
+                        Vaga: <i>Estágio em Direito Cível (Presencial - São Paulo/SP)</i><br>
+                        <b>Motivo do Veto:</b> Contém termo proibido ("Estágio") e modalidade incompatível com seu filtro 100% home office. Alerta descartado sem incomodar você.
+                    </div>
+                `;
+                addMessage(html);
+            }, 800);
+        }
+
+        function verCarta() {
+            document.getElementById('modalTitle').innerText = "Carta de Apresentação — Fintech Brasil Pagamentos";
+            document.getElementById('modalText').innerText = currentGeneratedLetter.replace(/\\n/g, '\n');
+            document.getElementById('copyMsg').innerText = "";
+            document.getElementById('letterModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('letterModal').style.display = 'none';
+        }
+
+        function copyLetter() {
+            navigator.clipboard.writeText(currentGeneratedLetter.replace(/\\n/g, '\n'));
+            document.getElementById('copyMsg').innerText = "✅ Carta copiada com sucesso!";
+            setTimeout(() => document.getElementById('copyMsg').innerText = "", 3000);
+        }
+
+        function sendUserReply() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            addMessage(`<div>${text}</div>`, true);
+            input.value = "";
+
+            showTyping(true);
+            setTimeout(() => {
+                showTyping(false);
+                if (text.toLowerCase().includes('sim') || text.toLowerCase().includes('ok') || text.toLowerCase().includes('autorizo')) {
+                    addMessage(`<div>🚀 <b>Excelente! Candidatura Despachada com Sucesso.</b><br><br>Apresentação enviada para o canal de atração da Fintech Brasil Pagamentos. Notificarei você assim que houver retorno ou agendamento de entrevista!</div>`);
+                } else {
+                    addMessage(`<div>Entendido! Mantendo a vaga no seu histórico do painel sem envio automático. Continuo monitorando os portais! 🫡</div>`);
+                }
+            }, 1000);
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter') sendUserReply();
+        }
     </script>
 </body>
 </html>

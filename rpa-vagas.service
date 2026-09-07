@@ -1,0 +1,18 @@
+[Unit]
+Description=Motor JARVIS RPA Vagas Career SaaS
+After=network.target postgresql.service docker.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/rpa-vagas
+Environment="PYTHONPATH=/opt/rpa-vagas"
+Environment="ENVIRONMENT=production"
+EnvironmentFile=/opt/rpa-vagas/.env
+# Rodar o bot de varredura acoplado ao cron integrado ou wrapper shell
+ExecStart=/opt/rpa-vagas/.venv/bin/python cli_orchestrator.py --send-alerts
+RestartSec=600
+
+[Install]
+WantedBy=multi-user.target
