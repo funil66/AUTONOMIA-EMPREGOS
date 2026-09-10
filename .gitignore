@@ -4,3 +4,7 @@ __pycache__/
 .env
 .venv/
 data/*.db
+
+# Proteção de Caches e Artefatos Temporários (Regra Raiz Limpa)
+*.py[cod]
+.ruff_cache/
